@@ -52,12 +52,14 @@ interface GetUserProfileArgs {
 
 export class SlackClient {
   private botHeaders: { Authorization: string; "Content-Type": string };
+  private bannedPostMessageChannels: string[];
 
-  constructor(botToken: string) {
+  constructor(botToken: string, bannedChannelIds: string) {
     this.botHeaders = {
       Authorization: `Bearer ${botToken}`,
       "Content-Type": "application/json",
     };
+    this.bannedPostMessageChannels = bannedChannelIds.split(",").map((id: string) => id.trim());
   }
 
   async getChannels(limit: number = 100, cursor?: string): Promise<any> {
@@ -109,6 +111,13 @@ export class SlackClient {
   }
 
   async postMessage(channel_id: string, text: string): Promise<any> {
+    if (this.bannedPostMessageChannels.includes(channel_id)) {
+      return {
+        ok: false,
+        error: "Channel " + channel_id + " is in SLACK_BANNED_CHANNEL_IDS, not allowed to post",
+      };
+    }
+
     const response = await fetch("https://slack.com/api/chat.postMessage", {
       method: "POST",
       headers: this.botHeaders,
@@ -549,6 +558,7 @@ Options:
 
 Environment Variables:
   AUTH_TOKEN             Bearer token for HTTP authorization (fallback if --token not provided)
+  BANNED_POST_MESSAGE_CHANNELS     Comma-separated list of channel IDs to ban slack_post_message from, e.g. "C4QDRD22MV,C013X9UMR2"
 
 Examples:
   node index.js                                    # Use stdio transport (default)
@@ -580,6 +590,7 @@ export async function main() {
   
   const botToken = process.env.SLACK_BOT_TOKEN;
   const teamId = process.env.SLACK_TEAM_ID;
+  const bannedPostMessageChannels = process.env.BANNED_POST_MESSAGE_CHANNELS;
 
   if (!botToken || !teamId) {
     console.error(
@@ -588,7 +599,7 @@ export async function main() {
     process.exit(1);
   }
 
-  const slackClient = new SlackClient(botToken);
+  const slackClient = new SlackClient(botToken, bannedPostMessageChannels ?? '');
   let httpServer: any = null;
 
   // Setup graceful shutdown handlers

@@ -365,7 +365,7 @@ describe('createSlackServer', () => {
   test('createSlackServer returns server instance', async () => {
     const { createSlackServer, SlackClient } = await import('../index.js');
     
-    const mockSlackClient = new SlackClient('xoxb-test-token');
+    const mockSlackClient = new SlackClient('xoxb-test-token', 'C123456,C789012');
     const server = createSlackServer(mockSlackClient);
 
     // Just test that the server is created and defined
@@ -484,7 +484,7 @@ describe('HTTP Server', () => {
   test('SlackClient can be instantiated', async () => {
     const { SlackClient } = await import('../index.js');
     
-    const mockSlackClient = new SlackClient('xoxb-test-token');
+    const mockSlackClient = new SlackClient('xoxb-test-token', 'C123456,C789012');
     
     // Test that SlackClient is created successfully
     expect(mockSlackClient).toBeDefined();

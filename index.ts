@@ -599,7 +599,7 @@ export async function main() {
     process.exit(1);
   }
 
-  const slackClient = new SlackClient(botToken, bannedPostMessageChannels);
+  const slackClient = new SlackClient(botToken, bannedPostMessageChannels ?? '');
   let httpServer: any = null;
 
   // Setup graceful shutdown handlers

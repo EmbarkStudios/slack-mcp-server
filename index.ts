@@ -256,6 +256,21 @@ export function createSlackServer(slackClient: SlackClient): McpServer {
       },
     },
     async ({ channel_id, text }) => {
+      // EMBARK HACK
+      const banned = {
+        "CDUDCDGMV": "#home",
+        "C013XCYQ2Q0": "#game-delivery",
+        "CE0H51CLX": "#it",
+        "CDNT2J5UL": "#general",
+        "C01PKQBGT1N": "#tools-and-ci-team",
+      };
+      const banned_channel = banned[channel_id];
+      if (banned_channel) {
+        return {
+          content: [{ type: "text", text: "guardrail in slack-mcp: not allowed to post in " + banned_channel + " because it's a huge channel and messages there are disruptive" }],
+        };
+      }
+      // END EMBARK HACK
       const response = await slackClient.postMessage(channel_id, text);
       return {
         content: [{ type: "text", text: JSON.stringify(response) }],
